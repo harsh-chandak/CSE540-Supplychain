@@ -4,28 +4,28 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test"
   },
   "keywords": [],
-  "author": "",
+  "author": "harsh-chandak",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
-    "@nomicfoundation/hardhat-ignition": "^3.0.4",
-    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.1",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.6",
     "@openzeppelin/contracts": "^5.4.0",
-    "@types/chai": "^4.3.20",
-    "@types/chai-as-promised": "^8.0.2",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.1.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.19.0",
-    "chai": "^5.3.3",
-    "ethers": "^6.15.0",
-    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "chai": "^6.2.0",
+    "dotenv": "^17.2.3",
+    "ethers": "^5.8.0",
     "hardhat": "^3.0.11",
     "mocha": "^11.7.4",
-    "typescript": "~5.8.0"
+    "typechain": "^8.3.2"
   },
   "dependencies": {
-    "dotenv": "^17.2.3"
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.1",
+    "forge-std": "github:foundry-rs/forge-std"
   }
 }
