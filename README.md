@@ -16,13 +16,14 @@ The contract allows participants to:
 The system aims to improve transparency, authenticity, and trust across the supply chain.
 
 ## Folder Structure
+```
 contracts/ → Solidity contracts (core logic)
 test/ → Unit tests written in JavaScript (Hardhat + ethers)
 scripts/ → Deployment and setup scripts
 CONTRACT_DRAFT.md → Human-readable explanation of contract functions and events
 hardhat.config.js → Hardhat configuration
 package.json → Node dependencies and npm scripts
-
+```
 
 ## Dependencies and Setup
 To build and test this project you’ll need:
@@ -33,65 +34,57 @@ To build and test this project you’ll need:
 
 ### Installation Steps
 Open a terminal and run:
+```
 npm install
+```
 This installs all required packages including Hardhat, Ethers, OpenZeppelin Contracts, Chai, and Mocha.
 
+---
 
 ### How to Run the Project
 1. Compile the Contract
+```
 npx hardhat compile
+```
 
 2. Run Tests
 Run the automated test suite to ensure everything compiles and basic flows work:
+```
 npx hardhat test
+```
 
 3. Start a Local Blockchain
 Run a local Ethereum node using Hardhat:
+```
 npx hardhat node
+```
 
 4. Deploy the Contract Locally
 In a new terminal window:
+```
 npx hardhat run scripts/deploy.js --network localhost
+```
 This command deploys the draft contract to your local Hardhat network and displays the deployed address.
+
+---
 
 ### How to Use the Contract
 
 Once the contract is deployed, you can interact with it directly from the Hardhat console:
-
+```
 npx hardhat console --network localhost
-
+```
 
 Then inside the console:
 
-const SupplyChain = await ethers.getContractFactory("SupplyChain");
+```const SupplyChain = await ethers.getContractFactory("SupplyChain");
 const sc = await SupplyChain.attach("<deployed_address>");
 await sc.registerProduct("<manufacturer_address>", "SKU-001", "ipfs://...");
 const product = await sc.getProduct(1);
 console.log(product);
+```
 
-How to Publish to GitHub
-
-Create a public repository on GitHub, for example:
-group-24-supplychain
-
-Push your project:
-
-git init
-git add .
-git commit -m "Initial draft: contract and documentation"
-git branch -M main
-git remote add origin https://github.com/<YOUR_USERNAME>/group-24-supplychain.git
-git push -u origin main
-
-
-Create a repo_link.txt file containing your GitHub repository URL:
-
-echo "https://github.com/<YOUR_USERNAME>/group-24-supplychain" > repo_link.txt
-
-
-Upload that .txt file to Canvas for submission.
-
-Notes for Reviewers
+### Notes for Reviewers
 
 This version focuses on:
 
