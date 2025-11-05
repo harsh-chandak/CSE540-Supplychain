@@ -96,7 +96,7 @@ For the next phases (Midterm & Final Deliverables):
    - Call `getProduct(1)` to retrieve details.
    - Observe event logs under **"Deployed Contracts"** and **Remix Console**.
 
-No external dependencies or real tokens are required — runs entirely in Remix’s simulated blockchain.
+No external dependencies or real tokens are required, runs entirely in Remix’s simulated blockchain.
 
 ---
 
@@ -108,3 +108,4 @@ Future iterations will expand this into a fully functional **web application** w
 ---
 
 *Team Group 24 – CSE540: Engineering Blockchain Applications (Fall B 2025)*
+Harsh Nitinkumar Chandak | Soham Sachin Joshi | Kartik Suhas Marathe | Aman Bhaiji Jain
