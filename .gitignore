@@ -1,0 +1,30 @@
+# Remix IDE local files
+.states/
+artifacts/
+
+# Scenarios (test state files from Remix)
+scenario.json
+scenario 2.json
+
+# VS Code settings (optional)
+.vscode/
+
+# Prettier config (optional to ignore)
+.prettierrc.json
+
+# Node modules (if using npm later)
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS & editor junk
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.log
+*.tmp
+*.bak
