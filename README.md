@@ -107,5 +107,5 @@ Future iterations will expand this into a fully functional **web application** w
 
 ---
 
-*Team Group 24 – CSE540: Engineering Blockchain Applications (Fall B 2025)*
+## Team Group 24 – CSE540: Engineering Blockchain Applications (Fall B 2025)
 Harsh Nitinkumar Chandak | Soham Sachin Joshi | Kartik Suhas Marathe | Aman Bhaiji Jain
