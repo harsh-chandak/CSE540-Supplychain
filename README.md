@@ -84,14 +84,19 @@ To run this project locally, you need:
 ### Phase 2: Frontend Configuration
 
 1. Navigate to the frontend directory:
+   
    ```
    cd frontend
    ```
-2. Install dependencies:
+   
+3. Install dependencies:
+   
    ```
    npm install
    ```
-3. Open `src/App.jsx` and update the configuration constants at the top:
+   
+5. Open `src/App.jsx` and update the configuration constants at the top:
+   
    ```
    const INSURANCE_ADDRESS = "YOUR_DEPLOYED_INSURANCE_ADDRESS";
    const SUPPLY_CHAIN_ADDRESS = "YOUR_DEPLOYED_SUPPLY_CHAIN_ADDRESS";
