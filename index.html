@@ -131,635 +131,637 @@
 
 	<script>
 		let provider, signer, contract;
-		const address = "0x85F05208B6C3613f42366dE27BAFBd4df40a8ceb";  // 🧠 Replace after deploy
-		const abi = [
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "note",
-						"type": "string"
-					}
-				],
-				"name": "certify",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"stateMutability": "nonpayable",
-				"type": "constructor"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "account",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "bool",
-						"name": "allowed",
-						"type": "bool"
-					}
-				],
-				"name": "CommitterUpdated",
-				"type": "event"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint32",
-						"name": "windowIdx",
-						"type": "uint32"
-					},
-					{
-						"internalType": "bytes32",
-						"name": "root",
-						"type": "bytes32"
-					}
-				],
-				"name": "commitWindowRoot",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "from",
-						"type": "address"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "to",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "notes",
-						"type": "string"
-					}
-				],
-				"name": "CustodyTransferred",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "regulator",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "note",
-						"type": "string"
-					}
-				],
-				"name": "ProductCertified",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "manufacturer",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "sku",
-						"type": "string"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "metadataURI",
-						"type": "string"
-					}
-				],
-				"name": "ProductRegistered",
-				"type": "event"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "string",
-						"name": "sku",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "metadataURI",
-						"type": "string"
-					}
-				],
-				"name": "registerProduct",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "address",
-						"name": "account",
-						"type": "address"
-					},
-					{
-						"indexed": false,
-						"internalType": "bool",
-						"name": "allowed",
-						"type": "bool"
-					}
-				],
-				"name": "RegulatorUpdated",
-				"type": "event"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "account",
-						"type": "address"
-					},
-					{
-						"internalType": "bool",
-						"name": "allowed",
-						"type": "bool"
-					}
-				],
-				"name": "setCommitter",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "account",
-						"type": "address"
-					},
-					{
-						"internalType": "bool",
-						"name": "allowed",
-						"type": "bool"
-					}
-				],
-				"name": "setRegulator",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"indexed": false,
-						"internalType": "bytes32",
-						"name": "rootOfRoots",
-						"type": "bytes32"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint64",
-						"name": "ts",
-						"type": "uint64"
-					}
-				],
-				"name": "ShipmentSealed",
-				"type": "event"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"indexed": false,
-						"internalType": "enum SupplyChain.Status",
-						"name": "status",
-						"type": "uint8"
-					},
-					{
-						"indexed": false,
-						"internalType": "string",
-						"name": "notes",
-						"type": "string"
-					}
-				],
-				"name": "StatusUpdated",
-				"type": "event"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bytes32",
-						"name": "rootOfRoots",
-						"type": "bytes32"
-					}
-				],
-				"name": "stopAndSeal",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "to",
-						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "notes",
-						"type": "string"
-					}
-				],
-				"name": "transferCustody",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"internalType": "enum SupplyChain.Status",
-						"name": "newStatus",
-						"type": "uint8"
-					},
-					{
-						"internalType": "string",
-						"name": "notes",
-						"type": "string"
-					}
-				],
-				"name": "updateStatus",
-				"outputs": [],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"anonymous": false,
-				"inputs": [
-					{
-						"indexed": true,
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					},
-					{
-						"indexed": true,
-						"internalType": "uint32",
-						"name": "windowIdx",
-						"type": "uint32"
-					},
-					{
-						"indexed": false,
-						"internalType": "bytes32",
-						"name": "root",
-						"type": "bytes32"
-					},
-					{
-						"indexed": false,
-						"internalType": "uint64",
-						"name": "ts",
-						"type": "uint64"
-					}
-				],
-				"name": "WindowCommitted",
-				"type": "event"
-			},
-			{
-				"inputs": [],
-				"name": "admin",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"name": "committers",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					}
-				],
-				"name": "currentOwnerOf",
-				"outputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "getAllProductIds",
-				"outputs": [
-					{
-						"internalType": "uint256[]",
-						"name": "",
-						"type": "uint256[]"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					}
-				],
-				"name": "getProduct",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "id",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "manufacturer",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "currentOwner",
-						"type": "address"
-					},
-					{
-						"internalType": "string",
-						"name": "sku",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "metadataURI",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "createdAt",
-						"type": "uint256"
-					},
-					{
-						"internalType": "enum SupplyChain.Status",
-						"name": "status",
-						"type": "uint8"
-					},
-					{
-						"internalType": "bool",
-						"name": "certified",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					}
-				],
-				"name": "isSealed",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "productId",
-						"type": "uint256"
-					}
-				],
-				"name": "lastCommittedWindow",
-				"outputs": [
-					{
-						"internalType": "uint32",
-						"name": "",
-						"type": "uint32"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"name": "lastWindow",
-				"outputs": [
-					{
-						"internalType": "uint32",
-						"name": "",
-						"type": "uint32"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "address",
-						"name": "",
-						"type": "address"
-					}
-				],
-				"name": "regulators",
-				"outputs": [
-					{
-						"internalType": "bool",
-						"name": "",
-						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"name": "sealedRoot",
-				"outputs": [
-					{
-						"internalType": "bytes32",
-						"name": "",
-						"type": "bytes32"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "totalProducts",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint32",
-						"name": "",
-						"type": "uint32"
-					}
-				],
-				"name": "windowRoot",
-				"outputs": [
-					{
-						"internalType": "bytes32",
-						"name": "",
-						"type": "bytes32"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			}
-		]
+		const address = "0x91fEf6F9a45F0De2f1885a18f970c4643766E4B2";  // 🧠 Replace after deploy
+		//Replace with your contract's ABI ( after compiling the .sol file get it from the debug and compile tab on the side bar to the very bottom )
+		const abi =
+			[
+				{
+					"inputs": [],
+					"stateMutability": "nonpayable",
+					"type": "constructor"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "address",
+							"name": "account",
+							"type": "address"
+						},
+						{
+							"indexed": false,
+							"internalType": "bool",
+							"name": "allowed",
+							"type": "bool"
+						}
+					],
+					"name": "CommitterUpdated",
+					"type": "event"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"indexed": true,
+							"internalType": "address",
+							"name": "from",
+							"type": "address"
+						},
+						{
+							"indexed": true,
+							"internalType": "address",
+							"name": "to",
+							"type": "address"
+						},
+						{
+							"indexed": false,
+							"internalType": "string",
+							"name": "notes",
+							"type": "string"
+						}
+					],
+					"name": "CustodyTransferred",
+					"type": "event"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"indexed": true,
+							"internalType": "address",
+							"name": "regulator",
+							"type": "address"
+						},
+						{
+							"indexed": false,
+							"internalType": "string",
+							"name": "note",
+							"type": "string"
+						}
+					],
+					"name": "ProductCertified",
+					"type": "event"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"indexed": true,
+							"internalType": "address",
+							"name": "manufacturer",
+							"type": "address"
+						},
+						{
+							"indexed": false,
+							"internalType": "string",
+							"name": "sku",
+							"type": "string"
+						},
+						{
+							"indexed": false,
+							"internalType": "string",
+							"name": "metadataURI",
+							"type": "string"
+						}
+					],
+					"name": "ProductRegistered",
+					"type": "event"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "address",
+							"name": "account",
+							"type": "address"
+						},
+						{
+							"indexed": false,
+							"internalType": "bool",
+							"name": "allowed",
+							"type": "bool"
+						}
+					],
+					"name": "RegulatorUpdated",
+					"type": "event"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"indexed": false,
+							"internalType": "bytes32",
+							"name": "rootOfRoots",
+							"type": "bytes32"
+						},
+						{
+							"indexed": false,
+							"internalType": "uint64",
+							"name": "ts",
+							"type": "uint64"
+						}
+					],
+					"name": "ShipmentSealed",
+					"type": "event"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"indexed": false,
+							"internalType": "enum SupplyChain.Status",
+							"name": "status",
+							"type": "uint8"
+						},
+						{
+							"indexed": false,
+							"internalType": "string",
+							"name": "notes",
+							"type": "string"
+						}
+					],
+					"name": "StatusUpdated",
+					"type": "event"
+				},
+				{
+					"anonymous": false,
+					"inputs": [
+						{
+							"indexed": true,
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"indexed": true,
+							"internalType": "uint32",
+							"name": "windowIdx",
+							"type": "uint32"
+						},
+						{
+							"indexed": false,
+							"internalType": "bytes32",
+							"name": "root",
+							"type": "bytes32"
+						},
+						{
+							"indexed": false,
+							"internalType": "uint64",
+							"name": "ts",
+							"type": "uint64"
+						}
+					],
+					"name": "WindowCommitted",
+					"type": "event"
+				},
+				{
+					"inputs": [],
+					"name": "admin",
+					"outputs": [
+						{
+							"internalType": "address",
+							"name": "",
+							"type": "address"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"internalType": "string",
+							"name": "note",
+							"type": "string"
+						}
+					],
+					"name": "certify",
+					"outputs": [],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint32",
+							"name": "windowIdx",
+							"type": "uint32"
+						},
+						{
+							"internalType": "bytes32",
+							"name": "root",
+							"type": "bytes32"
+						}
+					],
+					"name": "commitWindowRoot",
+					"outputs": [],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "address",
+							"name": "",
+							"type": "address"
+						}
+					],
+					"name": "committers",
+					"outputs": [
+						{
+							"internalType": "bool",
+							"name": "",
+							"type": "bool"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						}
+					],
+					"name": "currentOwnerOf",
+					"outputs": [
+						{
+							"internalType": "address",
+							"name": "",
+							"type": "address"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [],
+					"name": "getAllProductIds",
+					"outputs": [
+						{
+							"internalType": "uint256[]",
+							"name": "",
+							"type": "uint256[]"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						}
+					],
+					"name": "getProduct",
+					"outputs": [
+						{
+							"internalType": "uint256",
+							"name": "id",
+							"type": "uint256"
+						},
+						{
+							"internalType": "address",
+							"name": "manufacturer",
+							"type": "address"
+						},
+						{
+							"internalType": "address",
+							"name": "currentOwner",
+							"type": "address"
+						},
+						{
+							"internalType": "string",
+							"name": "sku",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "metadataURI",
+							"type": "string"
+						},
+						{
+							"internalType": "uint256",
+							"name": "createdAt",
+							"type": "uint256"
+						},
+						{
+							"internalType": "enum SupplyChain.Status",
+							"name": "status",
+							"type": "uint8"
+						},
+						{
+							"internalType": "bool",
+							"name": "certified",
+							"type": "bool"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						}
+					],
+					"name": "isSealed",
+					"outputs": [
+						{
+							"internalType": "bool",
+							"name": "",
+							"type": "bool"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						}
+					],
+					"name": "lastCommittedWindow",
+					"outputs": [
+						{
+							"internalType": "uint32",
+							"name": "",
+							"type": "uint32"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "",
+							"type": "uint256"
+						}
+					],
+					"name": "lastWindow",
+					"outputs": [
+						{
+							"internalType": "uint32",
+							"name": "",
+							"type": "uint32"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "string",
+							"name": "sku",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "metadataURI",
+							"type": "string"
+						}
+					],
+					"name": "registerProduct",
+					"outputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						}
+					],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "address",
+							"name": "",
+							"type": "address"
+						}
+					],
+					"name": "regulators",
+					"outputs": [
+						{
+							"internalType": "bool",
+							"name": "",
+							"type": "bool"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "",
+							"type": "uint256"
+						}
+					],
+					"name": "sealedRoot",
+					"outputs": [
+						{
+							"internalType": "bytes32",
+							"name": "",
+							"type": "bytes32"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "address",
+							"name": "account",
+							"type": "address"
+						},
+						{
+							"internalType": "bool",
+							"name": "allowed",
+							"type": "bool"
+						}
+					],
+					"name": "setCommitter",
+					"outputs": [],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "address",
+							"name": "account",
+							"type": "address"
+						},
+						{
+							"internalType": "bool",
+							"name": "allowed",
+							"type": "bool"
+						}
+					],
+					"name": "setRegulator",
+					"outputs": [],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"internalType": "bytes32",
+							"name": "rootOfRoots",
+							"type": "bytes32"
+						}
+					],
+					"name": "stopAndSeal",
+					"outputs": [],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [],
+					"name": "totalProducts",
+					"outputs": [
+						{
+							"internalType": "uint256",
+							"name": "",
+							"type": "uint256"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"internalType": "address",
+							"name": "to",
+							"type": "address"
+						},
+						{
+							"internalType": "string",
+							"name": "notes",
+							"type": "string"
+						}
+					],
+					"name": "transferCustody",
+					"outputs": [],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "productId",
+							"type": "uint256"
+						},
+						{
+							"internalType": "enum SupplyChain.Status",
+							"name": "newStatus",
+							"type": "uint8"
+						},
+						{
+							"internalType": "string",
+							"name": "notes",
+							"type": "string"
+						}
+					],
+					"name": "updateStatus",
+					"outputs": [],
+					"stateMutability": "nonpayable",
+					"type": "function"
+				},
+				{
+					"inputs": [
+						{
+							"internalType": "uint256",
+							"name": "",
+							"type": "uint256"
+						},
+						{
+							"internalType": "uint32",
+							"name": "",
+							"type": "uint32"
+						}
+					],
+					"name": "windowRoot",
+					"outputs": [
+						{
+							"internalType": "bytes32",
+							"name": "",
+							"type": "bytes32"
+						}
+					],
+					"stateMutability": "view",
+					"type": "function"
+				}
+			]
 
 		document.getElementById("connectBtn").onclick = async () => {
 			if (!window.ethereum) return alert("MetaMask not found");
@@ -853,7 +855,19 @@
 		async function getProduct() {
 			const pid = document.getElementById("pid6").value;
 			const p = await contract.getProduct(pid);
-			document.getElementById("productData").textContent = JSON.stringify(p, null, 2);
+
+			const parsed = {
+				id: p[0].toString(),
+				manufacturer: p[1],
+				currentOwner: p[2],
+				sku: p[3],
+				metadataURI: p[4],
+				createdAt: new Date(Number(p[5]) * 1000).toLocaleString(),
+				status: ["Created", "Shipped", "Received", "Delivered"][Number(p[6])],
+				certified: p[7]
+			};
+			document.getElementById("productData").textContent =
+				JSON.stringify(parsed, null, 2);
 		}
 
 		async function getOwner() {
