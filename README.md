@@ -1,7 +1,9 @@
 # ZK-ColdChain: Private Compliance Proofs with Parametric Payouts
 
 **Course:** CSE 540 - Engineering Blockchain Applications (Fall 2025)
+
 **Team:** Group 24
+
 **University:** Arizona State University
 
 ---
