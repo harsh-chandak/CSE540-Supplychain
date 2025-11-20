@@ -8,6 +8,7 @@ scenario 2.json
 
 # VS Code settings (optional)
 .vscode/
+.specstory
 
 # Prettier config (optional to ignore)
 .prettierrc.json

@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>ZK-ColdChain UI Demo</title>
+	<script src="https://cdn.jsdelivr.net/npm/ethers@6.9.0/dist/ethers.umd.min.js"></script>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			margin: 20px;
+			background: #fafafa;
+		}
+
+		input,
+		button {
+			margin: 4px;
+			padding: 6px;
+		}
+
+		.section {
+			border: 1px solid #ccc;
+			border-radius: 10px;
+			padding: 12px;
+			margin-top: 14px;
+			background: #fff;
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 8px;
+		}
+
+		th,
+		td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			font-size: 14px;
+			text-align: center;
+		}
+
+		th {
+			background-color: #f2f2f2;
+		}
+	</style>
+</head>
+
+<body>
+	<h2>🧊 ZK-ColdChain Demo UI</h2>
+	<button id="connectBtn">Connect MetaMask</button>
+	<p id="account"></p>
+
+	<!-- Write Functions -->
+	<div class="section">
+		<h3>Register Product</h3>
+		<input id="sku" placeholder="SKU (e.g. MilkBatch-001)">
+		<input id="uri" placeholder="metadataURI (ipfs://CID)">
+		<button onclick="registerProduct()">Register</button>
+	</div>
+
+	<div class="section">
+		<h3>Transfer Custody</h3>
+		<input id="pid1" placeholder="productId">
+		<input id="to" placeholder="new owner address">
+		<input id="note1" placeholder="notes">
+		<button onclick="transferCustody()">Transfer</button>
+	</div>
+
+	<div class="section">
+		<h3>Update Status</h3>
+		<input id="pid2" placeholder="productId">
+		<input id="status" placeholder="0=Created,1=Shipped,2=Received,3=Delivered">
+		<input id="note2" placeholder="notes">
+		<button onclick="updateStatus()">Update</button>
+	</div>
+
+	<div class="section">
+		<h3>Commit Window Root</h3>
+		<input id="pid3" placeholder="productId">
+		<input id="idx" placeholder="windowIdx">
+		<input id="root" placeholder="bytes32 root (0x...)">
+		<button onclick="commitRoot()">Commit</button>
+	</div>
+
+	<div class="section">
+		<h3>Seal Shipment</h3>
+		<input id="pid4" placeholder="productId">
+		<input id="seal" placeholder="rootOfRoots (0x...)">
+		<button onclick="seal()">Seal</button>
+	</div>
+
+	<div class="section">
+		<h3>Certify Product</h3>
+		<input id="pid5" placeholder="productId">
+		<input id="note3" placeholder="note">
+		<button onclick="certify()">Certify</button>
+	</div>
+
+	<!-- Read Functions -->
+	<div class="section">
+		<h3>📦 Read & Inspect Products</h3>
+		<button onclick="loadAllProducts()">Fetch All Products</button>
+		<p>Total Products: <span id="totalCount">-</span></p>
+		<table id="productsTable">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>SKU</th>
+					<th>Manufacturer</th>
+					<th>Owner</th>
+					<th>Status</th>
+					<th>Certified</th>
+					<th>Sealed</th>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+	</div>
+
+	<div class="section">
+		<h3>🔍 Single Product Queries</h3>
+		<input id="pid6" placeholder="productId">
+		<button onclick="getProduct()">Get Product</button>
+		<button onclick="getOwner()">Owner</button>
+		<button onclick="checkSealed()">Is Sealed?</button>
+		<button onclick="getLastWindow()">Last Window</button>
+		<button onclick="getSealedRoot()">Sealed Root</button>
+		<pre id="productData"></pre>
+	</div>
+
+	<script>
+		let provider, signer, contract;
+		const address = "0x85F05208B6C3613f42366dE27BAFBd4df40a8ceb";  // 🧠 Replace after deploy
+		const abi = [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "note",
+						"type": "string"
+					}
+				],
+				"name": "certify",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "bool",
+						"name": "allowed",
+						"type": "bool"
+					}
+				],
+				"name": "CommitterUpdated",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint32",
+						"name": "windowIdx",
+						"type": "uint32"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "root",
+						"type": "bytes32"
+					}
+				],
+				"name": "commitWindowRoot",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "from",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "notes",
+						"type": "string"
+					}
+				],
+				"name": "CustodyTransferred",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "regulator",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "note",
+						"type": "string"
+					}
+				],
+				"name": "ProductCertified",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "manufacturer",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "sku",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "metadataURI",
+						"type": "string"
+					}
+				],
+				"name": "ProductRegistered",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "sku",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "metadataURI",
+						"type": "string"
+					}
+				],
+				"name": "registerProduct",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "bool",
+						"name": "allowed",
+						"type": "bool"
+					}
+				],
+				"name": "RegulatorUpdated",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "allowed",
+						"type": "bool"
+					}
+				],
+				"name": "setCommitter",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "account",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "allowed",
+						"type": "bool"
+					}
+				],
+				"name": "setRegulator",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "rootOfRoots",
+						"type": "bytes32"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint64",
+						"name": "ts",
+						"type": "uint64"
+					}
+				],
+				"name": "ShipmentSealed",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "enum SupplyChain.Status",
+						"name": "status",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "notes",
+						"type": "string"
+					}
+				],
+				"name": "StatusUpdated",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "rootOfRoots",
+						"type": "bytes32"
+					}
+				],
+				"name": "stopAndSeal",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "notes",
+						"type": "string"
+					}
+				],
+				"name": "transferCustody",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "enum SupplyChain.Status",
+						"name": "newStatus",
+						"type": "uint8"
+					},
+					{
+						"internalType": "string",
+						"name": "notes",
+						"type": "string"
+					}
+				],
+				"name": "updateStatus",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint32",
+						"name": "windowIdx",
+						"type": "uint32"
+					},
+					{
+						"indexed": false,
+						"internalType": "bytes32",
+						"name": "root",
+						"type": "bytes32"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint64",
+						"name": "ts",
+						"type": "uint64"
+					}
+				],
+				"name": "WindowCommitted",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "admin",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "committers",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					}
+				],
+				"name": "currentOwnerOf",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getAllProductIds",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "",
+						"type": "uint256[]"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					}
+				],
+				"name": "getProduct",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "id",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "manufacturer",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "currentOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "string",
+						"name": "sku",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "metadataURI",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "createdAt",
+						"type": "uint256"
+					},
+					{
+						"internalType": "enum SupplyChain.Status",
+						"name": "status",
+						"type": "uint8"
+					},
+					{
+						"internalType": "bool",
+						"name": "certified",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					}
+				],
+				"name": "isSealed",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "productId",
+						"type": "uint256"
+					}
+				],
+				"name": "lastCommittedWindow",
+				"outputs": [
+					{
+						"internalType": "uint32",
+						"name": "",
+						"type": "uint32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "lastWindow",
+				"outputs": [
+					{
+						"internalType": "uint32",
+						"name": "",
+						"type": "uint32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "regulators",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "sealedRoot",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "totalProducts",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint32",
+						"name": "",
+						"type": "uint32"
+					}
+				],
+				"name": "windowRoot",
+				"outputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		]
+
+		document.getElementById("connectBtn").onclick = async () => {
+			if (!window.ethereum) return alert("MetaMask not found");
+			provider = new ethers.BrowserProvider(window.ethereum);
+			signer = await provider.getSigner();
+			const user = await signer.getAddress();
+			document.getElementById("account").innerText = `Connected: ${user}`;
+			contract = new ethers.Contract(address, abi, signer);
+		};
+
+		async function registerProduct() {
+			const skuVal = document.getElementById("sku").value;
+			const uriVal = document.getElementById("uri").value;
+			const tx = await contract.registerProduct(skuVal, uriVal);
+			await tx.wait();
+			alert("Product registered!");
+		}
+
+		async function transferCustody() {
+			const pid = document.getElementById("pid1").value;
+			const toAddr = document.getElementById("to").value;
+			const note = document.getElementById("note1").value;
+			const tx = await contract.transferCustody(pid, toAddr, note);
+			await tx.wait();
+			alert("Custody transferred!");
+		}
+
+		async function updateStatus() {
+			const pid = document.getElementById("pid2").value;
+			const statusVal = document.getElementById("status").value;
+			const note = document.getElementById("note2").value;
+			const tx = await contract.updateStatus(pid, statusVal, note);
+			await tx.wait();
+			alert("Status updated!");
+		}
+
+		async function commitRoot() {
+			const pid = document.getElementById("pid3").value;
+			const idx = document.getElementById("idx").value;
+			const root = document.getElementById("root").value;
+			const tx = await contract.commitWindowRoot(pid, idx, root);
+			await tx.wait();
+			alert("Root committed!");
+		}
+
+		async function seal() {
+			const pid = document.getElementById("pid4").value;
+			const sealVal = document.getElementById("seal").value;
+			const tx = await contract.stopAndSeal(pid, sealVal);
+			await tx.wait();
+			alert("Shipment sealed!");
+		}
+
+		async function certify() {
+			const pid = document.getElementById("pid5").value;
+			const note = document.getElementById("note3").value;
+			const tx = await contract.certify(pid, note);
+			await tx.wait();
+			alert("Product certified!");
+		}
+
+		async function loadAllProducts() {
+			try {
+				const ids = await contract.getAllProductIds();
+				const total = await contract.totalProducts();
+				document.getElementById("totalCount").textContent = total.toString();
+				const tbody = document.querySelector("#productsTable tbody");
+				tbody.innerHTML = "";
+
+				for (let i = 0; i < ids.length; i++) {
+					const id = ids[i];
+					const p = await contract.getProduct(id);
+					const sealed = await contract.isSealed(id);
+					const row = `<tr>
+        <td>${p[0]}</td>
+        <td>${p[3]}</td>
+        <td>${p[1].slice(0, 6)}...</td>
+        <td>${p[2].slice(0, 6)}...</td>
+        <td>${["Created", "Shipped", "Received", "Delivered"][p[6]]}</td>
+        <td>${p[7] ? "✅" : "❌"}</td>
+        <td>${sealed ? "🔒" : "—"}</td>
+      </tr>`;
+					tbody.innerHTML += row;
+				}
+			} catch (err) {
+				console.error(err);
+				alert("Error fetching products");
+			}
+		}
+
+		async function getProduct() {
+			const pid = document.getElementById("pid6").value;
+			const p = await contract.getProduct(pid);
+			document.getElementById("productData").textContent = JSON.stringify(p, null, 2);
+		}
+
+		async function getOwner() {
+			const pid = document.getElementById("pid6").value;
+			const owner = await contract.currentOwnerOf(pid);
+			document.getElementById("productData").textContent = `Owner: ${owner}`;
+		}
+
+		async function checkSealed() {
+			const pid = document.getElementById("pid6").value;
+			const sealed = await contract.isSealed(pid);
+			document.getElementById("productData").textContent = `Sealed: ${sealed}`;
+		}
+
+		async function getLastWindow() {
+			const pid = document.getElementById("pid6").value;
+			const idx = await contract.lastCommittedWindow(pid);
+			document.getElementById("productData").textContent = `Last committed window: ${idx}`;
+		}
+
+		async function getSealedRoot() {
+			const pid = document.getElementById("pid6").value;
+			const root = await contract.sealedRoot(pid);
+			document.getElementById("productData").textContent = `Sealed Root: ${root}`;
+		}
+	</script>
+</body>
+
+</html>
