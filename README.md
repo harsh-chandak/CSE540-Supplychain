@@ -4,7 +4,7 @@
 **Team:** Group 24
 **University:** Arizona State University
 
-![Supply Chain Process Placeholder](https://via.placeholder.com/800x200?text=Supply+Chain+Process+Diagram)
+---
 
 ## ❄️ Project Abstract
 **Proof-of-Cold** is a decentralized supply chain application that automates insurance payouts for perishable goods without revealing sensitive shipping data. It utilizes **Zero-Knowledge Proofs (ZKPs)** to cryptographically prove that a shipment violated temperature constraints (e.g., exceeding 8°C) while keeping the raw temperature logs private.
