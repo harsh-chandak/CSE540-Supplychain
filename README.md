@@ -147,6 +147,6 @@ The Dashboard is divided into 4 tabs representing the lifecycle of a shipment.
 ## 👥 Team Roles & Contributors
 
 - **Soham Sachin Joshi (Product & PM)**: Scope definition, documentation, and demo orchestration.
-- **Aman Bhaiji Jain (Smart-Contract Lead)**: Design and implementation of `Insurance.sol` and escrow logic.
-- **Kartik Suhas Marathe (ZK & Backend Lead)**: Circuit design (`temperature.circom`), Merkle tree logic, and gateway automation.
 - **Harsh Nitinkumar Chandak (Frontend & DevOps)**: React dashboard implementation, Web3 integration, and repository management.
+- **Kartik Suhas Marathe (ZK & Backend Lead)**: Circuit design (`temperature.circom`), Merkle tree logic, and gateway automation.
+- **Aman Bhaiji Jain (Smart-Contract Lead)**: Design and implementation of `Insurance.sol` and escrow logic.
